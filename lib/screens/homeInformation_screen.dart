@@ -15,10 +15,14 @@ class HomeInformationScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Image.asset(
-              news.photoPath,
-              fit: BoxFit.cover,
-              height: 300,
+            Hero(
+              tag: news.photoPath,
+              child: Image.asset(
+                news.photoPath,
+                fit: BoxFit.cover,
+                height: 300,
+                width: double.infinity,
+              ),
             ),
             const SizedBox(height: 10),
             Padding(

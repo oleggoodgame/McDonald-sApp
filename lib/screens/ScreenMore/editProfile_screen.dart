@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mc_donalds/database/database.dart';
 import 'package:mc_donalds/models/profile_model.dart';
 import 'package:mc_donalds/provider/profile_provider.dart';
 import 'package:intl/intl.dart';
@@ -13,97 +14,129 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
+  final db = DatabaseService();
 
-  String _firstName = '';
-  String _lastName = '';
-  DateTime? _birthDate;
-  String _email = '';
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
+  late TextEditingController _emailController;
+  late TextEditingController _birthDateController;
   Gender? _gender;
+  DateTime? _birthDate;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _emailController = TextEditingController();
+    _birthDateController = TextEditingController();
+
+    db.getProfile().then((profile) {
+      if (profile != null) {
+        ref
+            .read(profileProvider.notifier)
+            .updateProfile(
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              email: profile.email,
+              gender: profile.gender,
+              birthDate: profile.birthDate,
+            );
+
+        setState(() {
+          _firstNameController.text = profile.firstName;
+          _lastNameController.text = profile.lastName;
+          _emailController.text = profile.email;
+          _birthDate = profile.birthDate;
+          _birthDateController.text = profile.birthDate != null
+              ? DateFormat('yyyy-MM-dd').format(profile.birthDate!)
+              : '';
+          _gender = profile.gender;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _birthDateController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final userProfile = ref.read(profileProvider);
-    _firstName = userProfile.firstName;
-    _lastName = userProfile.lastName;
-    _birthDate = userProfile.birthDate;
-    _email = userProfile.email;
-    _gender = userProfile.gender;
-    final formattedDate = DateFormat('yyyy-MM-dd').format(_birthDate!);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(title: const Text('Edit')),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("* First Name"),
-                      TextFormField(
-                        initialValue: _firstName,
-                        onSaved: (value) => userProfile.firstName = value ?? _firstName,
-                        validator: _requiredValidator,
-                      ),
-                      const SizedBox(height: 16),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("* First Name"),
+                TextFormField(
+                  controller: _firstNameController,
+                  validator: _requiredValidator,
+                ),
+                const SizedBox(height: 16),
 
-                      const Text("*Email"),
-                      TextFormField(
-                        enabled: false,
-                        initialValue: _email,
-                        decoration: const InputDecoration(
-                          helperText: "The email address cannot be changed.",
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      const Text("Last Name"),
-                      TextFormField(
-                        initialValue: _lastName,
-                        onSaved: (value) => userProfile.lastName = value ?? _lastName,
-                      ),
-                      const SizedBox(height: 16),
-
-                      const Text("Gender"),
-                      DropdownButtonFormField<Gender>(
-                        value: _gender,
-                        items: Gender.values.map((gender) {
-                          final label = gender == Gender.male
-                              ? 'Male'
-                              : 'Female';
-                          return DropdownMenuItem<Gender>(
-                            value: gender,
-                            child: Text(label),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            userProfile.gender = value;
-                          }
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      const Text("Дата народження"),
-                      TextFormField(
-                        initialValue: formattedDate,
-                        onTap: _pickDate,
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          hintText: 'yyyy-MM-dd',
-                        ),
-                      ),
-                    ],
+                const Text("* Email"),
+                TextFormField(
+                  controller: _emailController,
+                  enabled: false,
+                  decoration: const InputDecoration(
+                    helperText: "The email address cannot be changed.",
                   ),
                 ),
-              ),
+                const SizedBox(height: 16),
+
+                const Text("Last Name"),
+                TextFormField(controller: _lastNameController),
+                const SizedBox(height: 16),
+
+                const Text("Gender"),
+                DropdownButtonFormField<Gender>(
+                  value: _gender,
+                  items: [
+                    ...Gender.values.map((gender) {
+                      final label = gender == Gender.nothing
+                          ? 'Nothing'
+                          : (gender == Gender.male ? 'Male' : 'Female');
+                      return DropdownMenuItem<Gender>(
+                        value: gender,
+                        child: Text(label),
+                      );
+                    }).toList(),
+                  ],
+                  onChanged: (value) {
+                    ref
+                        .read(profileProvider.notifier)
+                        .updateProfile(gender: value ?? Gender.male);
+                    setState(() {
+                      _gender = value;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                const Text("Дата народження"),
+                TextFormField(
+                  controller: _birthDateController,
+                  readOnly: true,
+                  onTap: _pickDate,
+                  decoration: const InputDecoration(hintText: 'yyyy-MM-dd'),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: Container(
@@ -113,9 +146,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
                 child: const Text("Скасувати"),
               ),
             ),
@@ -134,40 +165,54 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   void _saveChanges() {
-      final isValid = _formKey.currentState?.validate() ?? false;
-      if (!isValid) return;
+    if (!_formKey.currentState!.validate()) return;
 
-      _formKey.currentState?.save();
+    final firstName = _firstNameController.text;
+    final lastName = _lastNameController.text;
 
-      // ref
-      //     .read(profileProvider.notifier)
-      //     .updateProfile(
-      //       firstName: _firstName,
-      //       lastName: _lastName,
-      //       gender: _gender,
-      //       birthDate: _birthDate,
-      //     );
-
-      Navigator.pop(context);
+    ref
+        .read(profileProvider.notifier)
+        .updateProfile(firstName: firstName, lastName: lastName);
+    ref.read(profileProvider).firstName = firstName;
+    if (_birthDate != null) {
+      db.updateProfile(
+        firstName,
+        lastName,
+        _gender ?? Gender.male,
+        _birthDate!,
+      );
+    } else {
+      db.updateProfile(
+        firstName,
+        lastName,
+        _gender ?? Gender.male,
+        null
+      );
     }
 
-  Future<void> _pickDate() async { 
+    Navigator.pop(context);
+  }
+
+  Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime(2008, 6, 3),
+      initialDate: _birthDate ?? DateTime(2000, 1, 1),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
+
     if (picked != null) {
-      _birthDate = picked;
-       ref.read(profileProvider).birthDate = picked;
+      setState(() {
+        _birthDate = picked;
+        _birthDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+
+      ref.read(profileProvider.notifier).updateProfile(birthDate: picked);
     }
   }
 
   String? _requiredValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'This field is required';
-    }
+    if (value == null || value.trim().isEmpty) return 'This field is required';
     return null;
   }
 }

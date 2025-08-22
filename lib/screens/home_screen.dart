@@ -13,12 +13,16 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  void _setScreen(News news) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 800),
+        pageBuilder: (_, animation, secondaryAnimation) =>
+            HomeInformationScreen(news: news),
+      ),
+    );
+  }
 
-   void _setScreen(News news){
-    Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => HomeInformationScreen(news: news),
-        ),);
-   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +45,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SliverList(
             delegate: SliverChildBuilderDelegate((context, index) {
               final news = newsList[index];
-              return InkWell(child: HomeCard(news: news), onTap: () {_setScreen(news);},); // ОТУТ
+              return InkWell(
+                child: HomeCard(news: news),
+                onTap: () {
+                  _setScreen(news);
+                },
+              ); // ОТУТ чомусь не відкриває HomeInformationScreen
             }, childCount: newsList.length),
           ),
         ],

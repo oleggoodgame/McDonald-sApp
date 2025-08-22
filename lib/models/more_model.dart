@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 enum TypeMore {
   Profile,
+  YourDelivery,
   Site,
   Instagram,
-  Facebook,
   Feedback,
   Information,
   ChangeCountry,

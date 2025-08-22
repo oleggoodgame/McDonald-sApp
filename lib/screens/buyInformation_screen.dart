@@ -62,7 +62,7 @@ class FoodInformationScreen extends ConsumerWidget {
                   onPressed: () {
                     
                     ref.read(cartProvider.notifier).addToCart(food);
-
+                    ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Додано до покупки!')),
                     );

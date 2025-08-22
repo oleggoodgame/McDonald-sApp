@@ -14,9 +14,13 @@ class ProfileViewScreen extends ConsumerWidget {
     final fullName = '${userProfile.firstName} ${userProfile.lastName}';
     final email = userProfile.email;
     final birthDate = userProfile.birthDate;
-    final gender = userProfile.gender == Gender.male ? 'Male' : 'Female';
-    final formattedDate = DateFormat('yyyy-MM-dd').format(birthDate);
-
+    final gender = userProfile.gender == Gender.nothing
+        ? 'Nothing'
+        : (userProfile.gender == Gender.male ? 'Male' : 'Female');
+        print(birthDate);
+    final formattedDate = birthDate == null
+        ? 'Not specified'
+        : DateFormat('yyyy-MM-dd').format(birthDate);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(title: const Text("Your Profile"), centerTitle: true),

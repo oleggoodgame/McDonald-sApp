@@ -6,11 +6,11 @@ class ProfileProvider extends StateNotifier<Profile> {
   ProfileProvider()
     : super(
         Profile(
-          firstName: "Oleg",
-          lastName: "Gladun",
-          birthDate: DateTime(2008, 6, 3),
+          firstName: "",
+          lastName: "",
+          birthDate: null,
           gender: Gender.male,
-          email: 'oleggludyn09@gmail.com',
+          email: '',
         ),
       );
 

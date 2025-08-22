@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mc_donalds/data/data.dart';
+import 'package:mc_donalds/database/database.dart';
 import 'package:mc_donalds/models/foods_model.dart';
 import 'package:mc_donalds/models/vaucher_model.dart';
 import 'package:mc_donalds/provider/buy_provider.dart';
 import 'package:mc_donalds/provider/profile_provider.dart';
+import 'package:mc_donalds/widgets/delivery_widget.dart';
 
 class ApproveBuyScreen extends ConsumerWidget {
   const ApproveBuyScreen({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final db = DatabaseService();
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final foodCounts = countFoodItems(cart).entries.toList();
     final totalAmount = foodCounts.fold<double>(
       0.0,
       (sum, entry) => sum + getDiscountedPrice(entry.key, entry.value, ref),
-    );
+    ).toStringAsFixed(3);
     return Scaffold(
       appBar: AppBar(title: Text("Total $totalAmount")),
       body: Column(
@@ -29,55 +31,7 @@ class ApproveBuyScreen extends ConsumerWidget {
                 final entry = foodCounts[index];
                 final food = entry.key;
                 final count = entry.value;
-                return Card(
-                  color: Colors.white,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            food.photoPath,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            food.title,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        Text("Price: ${getDiscountedPrice(food, count, ref)}\$"),
-                        SizedBox(width: 12),
-                        Text("× $count"),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            cartNotifier.removeCard(food);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                return DeliveryWidget(food, count);
               },
             ),
           ),
@@ -89,7 +43,17 @@ class ApproveBuyScreen extends ConsumerWidget {
               onPressed: () {
                 final profileNotifier = ref.read(profileProvider.notifier);
                 final profile = ref.read(profileProvider);
-
+                db.addDelivery(
+                  totalAmount,
+                  foodCounts.map((entry) {
+                    final price = getDiscountedPrice2(entry.key, ref);
+                    return {
+                      "title": entry.key.title,
+                      "count": entry.value,
+                      "price": price,
+                    };
+                  }).toList(),
+                );
                 for (final entry in foodCounts) {
                   final food = entry.key;
 
@@ -110,7 +74,8 @@ class ApproveBuyScreen extends ConsumerWidget {
                     profileNotifier.deactivateVaucher(activeVoucher);
                   }
                 }
-
+                
+                ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Order confirmed!")),
                 );
@@ -118,7 +83,7 @@ class ApproveBuyScreen extends ConsumerWidget {
                 Navigator.pop(context);
               },
 
-              child: const Text("Підтвердити замовлення"),
+              child: const Text("Confirm order"),
             ),
           ),
         ],
@@ -127,20 +92,32 @@ class ApproveBuyScreen extends ConsumerWidget {
   }
 
   double getDiscountedPrice(Food food, int count, WidgetRef ref) {
-      print(ref.read(profileProvider).activeVauchers);
-      for (var v in ref.read(profileProvider).activeVauchers) {
-        print(v);
-        if (food.title == v.title) {
-          if (v.type == TypeVaucher.discount) {
-            return count * food.price * (1 - v.discount / 100);
-          } else if (v.type == TypeVaucher.priceDiscount) {
-            return count * v.discount;
-          }
+    print(ref.read(profileProvider).activeVauchers);
+    for (var v in ref.read(profileProvider).activeVauchers) {
+      print(v);
+      if (food.title == v.title) {
+        if (v.type == TypeVaucher.discount) {
+          return count * food.price * (1 - v.discount / 100);
+        } else if (v.type == TypeVaucher.priceDiscount) {
+          return count * v.discount;
         }
       }
-      return count * food.price;
     }
-
+    return count * food.price;
+  }
+  double getDiscountedPrice2(Food food, WidgetRef ref) {
+    for (var v in ref.read(profileProvider).activeVauchers) {
+      if (food.title == v.title) {
+        if (v.type == TypeVaucher.discount) {
+          return food.price * (1 - v.discount / 100);
+        } else if (v.type == TypeVaucher.priceDiscount) {
+          return v.discount;
+        }
+      }
+    }
+    return food.price;
+  }
+}
   // double getDiscountedPrice(Food food, WidgetRef ref) {
   //   print(ref.read(profileProvider).activeVauchers);
   //   for (var v in ref.read(profileProvider).activeVauchers) {
@@ -159,4 +136,3 @@ class ApproveBuyScreen extends ConsumerWidget {
   //   totalAmount += food.price;
   //   return food.price;
   // }
-}

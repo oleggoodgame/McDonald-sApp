@@ -1,12 +1,12 @@
 import 'package:mc_donalds/models/vaucher_model.dart';
 
-enum Gender { male, female }
+enum Gender { male, female, nothing }
 
 class Profile {
   String firstName;
   String lastName;
   String email;
-  DateTime birthDate;
+  DateTime? birthDate;
   Gender gender;
 
   List<Vaucher> activeVauchers;

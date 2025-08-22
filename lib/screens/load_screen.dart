@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mc_donalds/database/database.dart';
+import 'package:mc_donalds/provider/profile_provider.dart';
 import 'package:mc_donalds/screens/buttomNavigation_scree.dart';
 
 class McLoadScreen extends StatefulWidget {
@@ -56,11 +59,30 @@ class _McLoadScreenState extends State<McLoadScreen>
     ).animate(CurvedAnimation(parent: _imageController, curve: Curves.easeOut));
 
     _imageController.forward();
-
+    final db = DatabaseService();
+    final container = ProviderScope.containerOf(context, listen: false);
+    db.getProfile().then((profile) {
+      // print( profile!.birthDate);
+      if (profile != null) {
+        container
+            .read(profileProvider.notifier)
+            .updateProfile(
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              email: profile.email,
+              gender: profile.gender,
+              birthDate: profile.birthDate,
+            );
+      }
+    });
     Timer(Duration(seconds: _loadingDuration), () {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => ButtomnavigationScreen()),//створює новий екран, який можна замінити замість поточного
+        MaterialPageRoute(
+          builder: (context) => ButtomnavigationScreen(),
+          
+        ),
+        (route) => false, //створює новий екран, який можна замінити замість поточного
       );
     });
   }

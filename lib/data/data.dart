@@ -69,7 +69,7 @@ const List<More> moreItems = [
   More("Profile", Icons.person, TypeMore.Profile),
   More("Website", Icons.public, TypeMore.Site),
   More("Instagram", Icons.camera_alt, TypeMore.Instagram),
-  More("Facebook", Icons.facebook, TypeMore.Facebook),
+  More("YourDelivery", Icons.delivery_dining_outlined, TypeMore.YourDelivery),
   More("Feedback", Icons.feedback, TypeMore.Feedback),
   More("Information", Icons.info, TypeMore.Information),
   More("Change Country", Icons.flag, TypeMore.ChangeCountry),
@@ -77,7 +77,7 @@ const List<More> moreItems = [
 
 const List<ProfileAction> profileActions = [
   ProfileAction("View Profile", Icons.person, TypeProfileAction.View),
-  ProfileAction("Change Profile", Icons.swap_horiz, TypeProfileAction.Change),
+  ProfileAction("Sign out Profile", Icons.swap_horiz, TypeProfileAction.Change),
   ProfileAction("Edit Profile", Icons.edit, TypeProfileAction.Edit),
   ProfileAction("Share Profile", Icons.share, TypeProfileAction.Share),
   ProfileAction("Delete Profile", Icons.delete, TypeProfileAction.Delete),

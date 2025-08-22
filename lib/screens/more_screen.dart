@@ -3,6 +3,7 @@ import 'package:mc_donalds/data/data.dart';
 import 'package:mc_donalds/models/more_model.dart';
 import 'package:mc_donalds/screens/ScreenMore/information_screen.dart';
 import 'package:mc_donalds/screens/ScreenMore/profile_screen.dart';
+import 'package:mc_donalds/screens/ScreenMore/yourDelivery_screen.dart';
 import 'package:mc_donalds/widgets/moreCard_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -66,8 +67,11 @@ class _MoreScreenState extends State<MoreScreen> {
       _launchUrl("https://www.mcdonalds.com/ua/uk-ua.html");
     } else if (type == TypeMore.Instagram) {
       _launchUrl("https://www.instagram.com/mcdonalds/?hl=uk");
-    } else if (type == TypeMore.Facebook) {
-      _launchUrl("https://www.facebook.com/McDonaldsUA/?locale2=en_GB&_rdr");
+    } else if (type == TypeMore.YourDelivery) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const YourDeliveryScreen()),
+      );
     } else if (type == TypeMore.Feedback) {
       _launchUrl("https://github.com/oleggoodgame");
     } else if (type == TypeMore.Information) {

@@ -59,15 +59,26 @@ class BuyGridView extends ConsumerWidget {
                 ),
                 Expanded(
                   flex: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      food.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          food.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      Text(
+                    getDiscountedPrice(food, ref).toString()+'\$',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                    ],
                   ),
                 ),
               ],
@@ -77,17 +88,17 @@ class BuyGridView extends ConsumerWidget {
       },
     );
   }
-  double getDiscountedPrice(Food food, List<Vaucher> activeVauchers, WidgetRef ref) {
-  for (var v in ref.read(profileProvider).activeVauchers) {
-    if (food.title == v.title) {
-      if (v.type == TypeVaucher.discount) {
-        return food.price * (1 - v.discount / 100);
-      } else if (v.type == TypeVaucher.priceDiscount) {
-        return v.discount;
+
+  double getDiscountedPrice(Food food, WidgetRef ref) {
+    for (var v in ref.read(profileProvider).activeVauchers) {
+      if (food.title == v.title) {
+        if (v.type == TypeVaucher.discount) {
+          return food.price * (1 - v.discount / 100);
+        } else if (v.type == TypeVaucher.priceDiscount) {
+          return v.discount;
+        }
       }
     }
+    return food.price;
   }
-  return food.price;
-}
-
 }

@@ -22,7 +22,6 @@ class _BuyScreenState extends ConsumerState<BuyScreen> {
       drawer: const MainDrawer(),
       body: const BuyGridView(),
 
-      // 🟡 FAB для підтвердження покупки
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.amber,
         icon: Stack(
@@ -68,7 +67,8 @@ class _BuyScreenState extends ConsumerState<BuyScreen> {
       ),
 
       floatingActionButtonLocation:
-          FloatingActionButtonLocation.endFloat, // 🔽 по центру
+          FloatingActionButtonLocation.endFloat,
     );
   }
+   
 }

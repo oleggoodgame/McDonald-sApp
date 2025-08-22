@@ -20,20 +20,22 @@ class HomeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-            child: Image.asset(
-              news.photoPath,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 200,
+          Hero(
+            tag: news.photoPath,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+              child: Image.asset(
+                news.photoPath,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 200,
+              ),
             ),
           ),
 
-          // Текстовий блок
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
